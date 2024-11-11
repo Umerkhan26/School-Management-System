@@ -1,65 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import { Form, Button, Table, Row, Col, Modal } from "react-bootstrap";
 import { IoChevronDown } from "react-icons/io5"; // Importing the chevron down icon
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaSearch } from "react-icons/fa";
+import { getAttendanceData } from "./Services/attendance";
 
 const AttendanceSection = () => {
-  const initialAttendanceData = {
-    "Class 1": [
-      { regNo: "001", name: "John ", status: "Present" },
-      { regNo: "002", name: "Jane ", status: "Absent" },
-      { regNo: "003", name: "JFoster ", status: "Absent" },
-      { regNo: "004", name: "Thor ", status: "Absent" },
-      { regNo: "005", name: "Warner ", status: "Absent" },
-      { regNo: "006", name: "Cummins ", status: "Absent" },
-    ],
-    "Class 2": [
-      { regNo: "001", name: "Doe", status: "Present" },
-      { regNo: "002", name: "Jeo", status: "Absent" },
-      { regNo: "003", name: "Smith", status: "Absent" },
-      { regNo: "004", name: "Pat", status: "Absent" },
-      { regNo: "005", name: "Starc", status: "Absent" },
-      { regNo: "006", name: "Peter", status: "Absent" },
-      { regNo: "007", name: "Mc", status: "Absent" },
-    ],
-    "Class 3": [
-      { regNo: "001", name: "Sam ", status: "Present" },
-      { regNo: "002", name: "Lucy ", status: "Absent" },
-      { regNo: "003", name: "Lucky ", status: "Absent" },
-      { regNo: "004", name: "Larn ", status: "Absent" },
-      { regNo: "005", name: "Jick", status: "Absent" },
-      { regNo: "006", name: "Hulk ", status: "Absent" },
-      { regNo: "007", name: "Spider ", status: "Absent" },
-    ],
-    "Class 4": [
-      { regNo: "001", name: " Brown", status: "Present" },
-      { regNo: "002", name: " Black", status: "Absent" },
-      { regNo: "003", name: " Blachkl", status: "Absent" },
-      { regNo: "004", name: " Blaho", status: "Absent" },
-      { regNo: "005", name: " Blabi", status: "Absent" },
-      { regNo: "006", name: " Blacksdd", status: "Absent" },
-    ],
-    "Class 5": [
-      { regNo: "001", name: "Sam ", status: "Present" },
-      { regNo: "002", name: "Wick", status: "Absent" },
-      { regNo: "003", name: "Pick", status: "Absent" },
-      { regNo: "004", name: "Sick", status: "Absent" },
-      { regNo: "005", name: "Jick", status: "Absent" },
-    ],
-    "Class 6": [
-      { regNo: "001", name: "Sam ", status: "Present" },
-      { regNo: "002", name: "Wick", status: "Absent" },
-      { regNo: "003", name: "Pick", status: "Absent" },
-      { regNo: "004", name: "Sick", status: "Absent" },
-      { regNo: "005", name: "Jick", status: "Absent" },
-    ],
-    // Add more initial data for other classes if needed
-  };
-
   const [showAttendance, setShowAttendance] = useState(false);
-  const [attendanceData, setAttendanceData] = useState(initialAttendanceData);
+  const [attendanceData, setAttendanceData] = useState();
   const [newStudent, setNewStudent] = useState({
     regNo: "",
     name: "",
@@ -67,6 +16,19 @@ const AttendanceSection = () => {
   });
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState("Class 1");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAttendanceData(); // Fetch attendance data from the mock function
+        setAttendanceData(data);
+      } catch (error) {
+        console.error("Error fetching attendance data:", error);
+      }
+    };
+
+    fetchData(); // Call the fetch function when the component mounts
+  }, []);
 
   const handleManageAttendance = () => {
     setShowAttendance(true);

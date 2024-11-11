@@ -1,29 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Select from "react-select";
 import { FaSearch } from "react-icons/fa";
+import { getEvents } from "./Services/event";
 
 const EventCalendarSecton = () => {
   const [showForm, setShowForm] = useState(false);
-  const [events, setEvents] = useState([
-    {
-      id: "1",
-      title: "School Annual Day",
-      description:
-        "Annual function celebration with various cultural programs.",
-      date: "2023-09-15",
-      location: "School Auditorium",
-    },
-    {
-      id: "2",
-      title: "Parent-Teacher Meeting",
-      description:
-        "Meeting to discuss student progress and academic performance.",
-      date: "2023-09-20",
-      location: "Classrooms",
-    },
-  ]);
+  const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState([]);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -72,6 +57,22 @@ const EventCalendarSecton = () => {
     { value: "2024", label: "2024" },
     // Add more options as needed
   ];
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const data = await getEvents(); // Fetch the event data
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   return (
     <div className="container-fluid" style={{ overflowX: "hidden" }}>

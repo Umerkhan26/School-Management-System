@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Select from "react-select";
 import { FaUser, FaUserGraduate, FaSearch } from "react-icons/fa";
+import { getTeachers } from "./Services/teacher";
 
 const Teachers = () => {
   const [showForm, setShowForm] = useState(false);
+  const [teachers, setTeachers] = useState([]);
   const [formData, setFormData] = useState({
     teacherName: "",
     teacherEmail: "",
@@ -16,24 +18,6 @@ const Teachers = () => {
   });
 
   // Sample data for teachers
-  const teachers = [
-    {
-      teacherName: "John Doe",
-      teacherEmail: "john.doe@example.com",
-      teacherPhone: "+1234567890",
-      teacherClass: "Class 1",
-      teacherGender: "Male",
-      teacherSubject: "Mathematics",
-    },
-    {
-      teacherName: "Jane Smith",
-      teacherEmail: "jane.smith@example.com",
-      teacherPhone: "+9876543210",
-      teacherClass: "Class 2",
-      teacherGender: "Female",
-      teacherSubject: "English",
-    },
-  ];
 
   const handleAddTeacherClick = (event) => {
     event.preventDefault();
@@ -62,6 +46,17 @@ const Teachers = () => {
     });
     setShowForm(false);
   };
+
+  useEffect(() => {
+    // Fetch teachers when component mounts
+    getTeachers()
+      .then((data) => {
+        setTeachers(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching teachers:", error);
+      });
+  }, []);
 
   const classOptions = [
     {

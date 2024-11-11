@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -12,9 +12,11 @@ import Select from "react-select";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Sidebar from "./Sidebar";
 import { FaSearch } from "react-icons/fa";
+import { getExamDetail, fetchTimetableData } from "./Services/exam";
 
 const ExamSection = () => {
   const [showForm, setShowForm] = useState(false);
+  const [examDetails, setExamDetails] = useState(null);
   const [formData, setFormData] = useState({
     examName: "",
     className: null,
@@ -24,10 +26,13 @@ const ExamSection = () => {
   });
   const [selectedClass, setSelectedClass] = useState(null);
   const [timetableData, setTimetableData] = useState([]);
+  const [timetable, setTimetable] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [showTimetable, setShowTimetable] = useState(false); // State to toggle timetable visibility
   // const [showAddSubject, setShowAddSubject] = useState(false); // State to toggle Add Subject section visibility
 
+  const className = "Midterm Class 1";
   const classOptions = [
     { value: "Midterm Class 1", label: "Midterm Class 1" },
     { value: "Midterm Class 2", label: "Midterm Class 2" },
@@ -68,69 +73,69 @@ const ExamSection = () => {
     // setShowAddSubject(false); // Hide Add Subject section initially
   };
 
-  const fetchTimetableData = (className) => {
-    // Mock data fetching for timetable
-    const mockTimetableData = {
-      "Midterm Class 1": [
-        {
-          subjectName: "Mathematics",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "Science",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-      "Midterm Class 2": [
-        {
-          subjectName: "English",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "History",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-      "Final Term Class 1": [
-        {
-          subjectName: "Physics",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "Chemistry",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-      "Final Term Class 2": [
-        {
-          subjectName: "Biology",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "Geography",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-    };
+  // const fetchTimetableData = (className) => {
+  //   // Mock data fetching for timetable
+  //   const mockTimetableData = {
+  //     "Midterm Class 1": [
+  //       {
+  //         subjectName: "Mathematics",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "Science",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //     "Midterm Class 2": [
+  //       {
+  //         subjectName: "English",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "History",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //     "Final Term Class 1": [
+  //       {
+  //         subjectName: "Physics",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "Chemistry",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //     "Final Term Class 2": [
+  //       {
+  //         subjectName: "Biology",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "Geography",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //   };
 
-    return mockTimetableData[className] || [];
-  };
+  //   return mockTimetableData[className] || [];
+  // };
 
   const handleEditSubject = (index, field, value) => {
     const updatedTimetable = [...timetableData];
@@ -151,6 +156,29 @@ const ExamSection = () => {
     examStartDate: "2024-08-01",
     examEndDate: "2024-08-10",
   };
+
+  useEffect(() => {
+    // Fetch exam details on component mount
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch exam details
+        const examData = await getExamDetail();
+        setExamDetails(examData);
+
+        // Fetch timetable data for a specific class
+        const timetableData = await fetchTimetableData(className);
+        setTimetable(timetableData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [className]);
 
   return (
     <div className="container-fluid overflow-y-hidden">
@@ -392,43 +420,52 @@ const ExamSection = () => {
                     </div>
                   )}
                   <div className="exam-detail mt-4">
-                    <Card
-                      className="mb-3"
-                      style={{ border: "none", backgroundColor: "transparent" }}
-                    >
-                      <Card.Body
-                        style={{ padding: "0px", overflowX: "hidden" }}
+                    {loading ? (
+                      <p>Loading exam details...</p>
+                    ) : examDetails ? (
+                      <Card
+                        className="mb-3"
+                        style={{
+                          border: "none",
+                          backgroundColor: "transparent",
+                        }}
                       >
-                        <table
-                          className="table table-striped"
-                          style={{
-                            width: "100%",
-                            border: "none",
-                            backgroundColor: "transparent",
-                          }}
+                        <Card.Body
+                          style={{ padding: "0px", overflowX: "hidden" }}
                         >
-                          <thead>
-                            <tr>
-                              <th>Exam Name</th>
-                              <th>Class</th>
-                              <th>Term</th>
-                              <th>Dates</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>{examDetailData.examName}</td>
-                              <td>{examDetailData.className}</td>
-                              <td>{examDetailData.examTerm}</td>
-                              <td>
-                                {examDetailData.examStartDate} to{" "}
-                                {examDetailData.examEndDate}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </Card.Body>
-                    </Card>
+                          <table
+                            className="table table-striped"
+                            style={{
+                              width: "100%",
+                              border: "none",
+                              backgroundColor: "transparent",
+                            }}
+                          >
+                            <thead>
+                              <tr>
+                                <th>Exam Name</th>
+                                <th>Class</th>
+                                <th>Term</th>
+                                <th>Dates</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{examDetailData.examName}</td>
+                                <td>{examDetailData.className}</td>
+                                <td>{examDetailData.examTerm}</td>
+                                <td>
+                                  {examDetailData.examStartDate} to{" "}
+                                  {examDetailData.examEndDate}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </Card.Body>
+                      </Card>
+                    ) : (
+                      <p>No exam details available</p>
+                    )}
                   </div>
                 </Tab.Pane>
 
@@ -485,7 +522,7 @@ const ExamSection = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {timetableData.map((subject, index) => (
+                          {timetable.map((subject, index) => (
                             <tr key={index}>
                               <td>
                                 <input

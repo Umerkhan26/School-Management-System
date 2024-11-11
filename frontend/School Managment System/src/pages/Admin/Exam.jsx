@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -13,6 +13,7 @@ import Select from "react-select";
 import { FaEdit, FaSearch, FaTrash } from "react-icons/fa"; // Import icons for edit and delete
 import "bootstrap/dist/css/bootstrap.min.css";
 import Sidebar from "./Sidebar";
+import { getExamDetail, fetchTimetableData } from "./Services/exam";
 
 const Exam = () => {
   const [showForm, setShowForm] = useState(false);
@@ -25,14 +26,18 @@ const Exam = () => {
   });
   const [selectedClass, setSelectedClass] = useState(null);
   const [timetableData, setTimetableData] = useState([]);
+  const [examDetails, setExamDetails] = useState(null);
+  const [timetable, setTimetable] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newSubject, setNewSubject] = useState({
     subjectName: "",
     startTime: "",
     endTime: "",
     date: "",
   });
-  const [showTimetable, setShowTimetable] = useState(false); // State to toggle timetable visibility
-  const [showAddSubject, setShowAddSubject] = useState(false); // State to toggle Add Subject section visibility
+  const [showTimetable, setShowTimetable] = useState(false);
+  const [showAddSubject, setShowAddSubject] = useState(false);
+  const className = "Midterm Class 1";
 
   const classOptions = [
     { value: "Midterm Class 1", label: "Midterm Class 1" },
@@ -78,69 +83,69 @@ const Exam = () => {
     setShowAddSubject(false); // Hide Add Subject section initially
   };
 
-  const fetchTimetableData = (className) => {
-    // Mock data fetching for timetable
-    const mockTimetableData = {
-      "Midterm Class 1": [
-        {
-          subjectName: "Mathematics",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "Science",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-      "Midterm Class 2": [
-        {
-          subjectName: "English",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "History",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-      "Final Term Class 1": [
-        {
-          subjectName: "Physics",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "Chemistry",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-      "Final Term Class 2": [
-        {
-          subjectName: "Biology",
-          startTime: "09:00 AM",
-          endTime: "11:00 AM",
-          date: "2024-08-01",
-        },
-        {
-          subjectName: "Geography",
-          startTime: "01:00 PM",
-          endTime: "03:00 PM",
-          date: "2024-08-01",
-        },
-      ],
-    };
+  // const fetchTimetableData = (className) => {
+  //   // Mock data fetching for timetable
+  //   const mockTimetableData = {
+  //     "Midterm Class 1": [
+  //       {
+  //         subjectName: "Mathematics",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "Science",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //     "Midterm Class 2": [
+  //       {
+  //         subjectName: "English",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "History",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //     "Final Term Class 1": [
+  //       {
+  //         subjectName: "Physics",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "Chemistry",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //     "Final Term Class 2": [
+  //       {
+  //         subjectName: "Biology",
+  //         startTime: "09:00 AM",
+  //         endTime: "11:00 AM",
+  //         date: "2024-08-01",
+  //       },
+  //       {
+  //         subjectName: "Geography",
+  //         startTime: "01:00 PM",
+  //         endTime: "03:00 PM",
+  //         date: "2024-08-01",
+  //       },
+  //     ],
+  //   };
 
-    return mockTimetableData[className] || [];
-  };
+  //   return mockTimetableData[className] || [];
+  // };
 
   const handleAddSubject = () => {
     setTimetableData([...timetableData, newSubject]);
@@ -178,13 +183,29 @@ const Exam = () => {
   };
 
   // Dummy data for exam detail
-  const examDetailData = {
-    examName: "Final Term Exam",
-    className: "Final Term Class 1",
-    examTerm: "Final",
-    examStartDate: "2024-08-01",
-    examEndDate: "2024-08-10",
-  };
+
+  useEffect(() => {
+    // Fetch exam details on component mount
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch exam details
+        const examData = await getExamDetail();
+        setExamDetails(examData);
+
+        // Fetch timetable data for a specific class
+        const timetableData = await fetchTimetableData(className);
+        setTimetable(timetableData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [className]);
 
   return (
     <div className="container-fluid overflow-y-hidden">
@@ -434,63 +455,72 @@ const Exam = () => {
                     </div>
                   )}
                   <div className="exam-detail mt-4">
-                    <Card
-                      className="mb-3"
-                      style={{ border: "none", backgroundColor: "transparent" }}
-                    >
-                      <Card.Body
-                        style={{ padding: "0px", overflowX: "hidden" }}
+                    {loading ? (
+                      <p>Loading exam details...</p>
+                    ) : examDetails ? (
+                      <Card
+                        className="mb-3"
+                        style={{
+                          border: "none",
+                          backgroundColor: "transparent",
+                        }}
                       >
-                        <table
-                          className="table table-striped"
-                          style={{
-                            width: "100%",
-                            border: "none",
-                            backgroundColor: "transparent",
-                          }}
+                        <Card.Body
+                          style={{ padding: "0px", overflowX: "hidden" }}
                         >
-                          <thead>
-                            <tr>
-                              <th>Exam Name</th>
-                              <th>Class</th>
-                              <th>Term</th>
-                              <th>Dates</th>
-                              <th>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>{examDetailData.examName}</td>
-                              <td>{examDetailData.className}</td>
-                              <td>{examDetailData.examTerm}</td>
-                              <td>
-                                {examDetailData.examStartDate} to{" "}
-                                {examDetailData.examEndDate}
-                              </td>
-                              <td>
-                                <Button
-                                  variant="warning"
-                                  onClick={handleEditExamDetail}
-                                  style={{
-                                    border: "1px solid black",
-                                    marginRight: "1rem",
-                                  }}
-                                >
-                                  <FaEdit /> Edit
-                                </Button>
-                                <Button
-                                  variant="danger"
-                                  onClick={handleDeleteExamDetail}
-                                  style={{ border: "1px solid black" }}
-                                >
-                                  <FaTrash /> Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </Card.Body>
-                    </Card>
+                          <table
+                            className="table table-striped"
+                            style={{
+                              width: "100%",
+                              border: "none",
+                              backgroundColor: "transparent",
+                            }}
+                          >
+                            <thead>
+                              <tr>
+                                <th>Exam Name</th>
+                                <th>Class</th>
+                                <th>Term</th>
+                                <th>Dates</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{examDetails.examName}</td>
+                                <td>{examDetails.className}</td>
+                                <td>{examDetails.examTerm}</td>
+                                <td>
+                                  {examDetails.examStartDate} to{" "}
+                                  {examDetails.examEndDate}
+                                </td>
+                                <td>
+                                  <Button
+                                    variant="warning"
+                                    onClick={handleEditExamDetail}
+                                    style={{
+                                      border: "1px solid black",
+                                      marginRight: "1rem",
+                                    }}
+                                  >
+                                    <FaEdit /> Edit
+                                  </Button>
+                                  <Button
+                                    variant="danger"
+                                    onClick={handleDeleteExamDetail}
+                                    style={{ border: "1px solid black" }}
+                                  >
+                                    <FaTrash /> Delete
+                                  </Button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </Card.Body>
+                      </Card>
+                    ) : (
+                      <p>No exam details available</p>
+                    )}
                   </div>
                 </Tab.Pane>
 
@@ -523,17 +553,16 @@ const Exam = () => {
                         style={{
                           border: "1px solid black",
                           position: "relative",
-                          top: "-7px",
-                          left: "15px",
+                          top: "-3px",
+                          left: "10px",
                         }}
                         disabled={!selectedClass} // Disable button when no class is selected
                       >
-                        {showTimetable
-                          ? "Hide Time Table"
-                          : "Manage Time Table"}
+                        {showTimetable ? "Hide Timetable" : "Manage Timetable"}
                       </Button>
                     </div>
                   </div>
+
                   {showTimetable && (
                     <div className="timetable mt-4">
                       <h2 style={{ color: "#000" }}>
@@ -550,7 +579,7 @@ const Exam = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {timetableData.map((subject, index) => (
+                          {timetable.map((subject, index) => (
                             <tr key={index}>
                               <td>
                                 <input
@@ -563,7 +592,10 @@ const Exam = () => {
                                       e.target.value
                                     )
                                   }
-                                  style={{ border: "1px solid black" }}
+                                  style={{
+                                    border: "1px solid black",
+                                    width: "100%",
+                                  }}
                                 />
                               </td>
                               <td>
@@ -577,7 +609,10 @@ const Exam = () => {
                                       e.target.value
                                     )
                                   }
-                                  style={{ border: "1px solid black" }}
+                                  style={{
+                                    border: "1px solid black",
+                                    width: "100%",
+                                  }}
                                 />
                               </td>
                               <td>
@@ -591,7 +626,10 @@ const Exam = () => {
                                       e.target.value
                                     )
                                   }
-                                  style={{ border: "1px solid black" }}
+                                  style={{
+                                    border: "1px solid black",
+                                    width: "100%",
+                                  }}
                                 />
                               </td>
                               <td>
@@ -605,10 +643,13 @@ const Exam = () => {
                                       e.target.value
                                     )
                                   }
-                                  style={{ border: "1px solid black" }}
+                                  style={{
+                                    border: "1px solid black",
+                                    width: "100%",
+                                  }}
                                 />
                               </td>
-                              <td>
+                              <td className="text-center">
                                 <Button
                                   variant="danger"
                                   onClick={() => handleDeleteSubject(index)}

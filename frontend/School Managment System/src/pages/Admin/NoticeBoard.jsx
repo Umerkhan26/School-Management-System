@@ -1,25 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Select from "react-select";
 import { FaEdit, FaPlus, FaSearch, FaTrash } from "react-icons/fa";
+import { getNotices } from "./Services/notice";
 
 const NoticeBoard = () => {
   const [showForm, setShowForm] = useState(false);
-  const [notices, setNotices] = useState([
-    {
-      id: "1",
-      title: "Holiday Announcement",
-      description: "School will be closed on Friday.",
-      date: "2023-07-14",
-    },
-    {
-      id: "2",
-      title: "Exam Schedule",
-      description: "Final exams will start from next week.",
-      date: "2023-07-15",
-    },
-  ]);
+  const [notices, setNotices] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -87,8 +77,25 @@ const NoticeBoard = () => {
     // Add more options as needed
   ];
 
+  useEffect(() => {
+    const fetchNotices = async () => {
+      setLoading(true);
+      try {
+        const data = await getNotices(); // Fetch the notices using the function
+        setNotices(data);
+      } catch (error) {
+        console.error("Error fetching notices:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotices();
+  }, []);
+
   return (
     <div className="container-fluid" style={{ overflowX: "hidden" }}>
+      if (loading) return <p>Loading...</p>;
       <div className="row">
         <div className="col-md-3">
           <Sidebar />

@@ -1,31 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaEdit, FaPlus, FaSearch, FaTrashAlt } from "react-icons/fa";
 import Select from "react-select";
 import { Modal, Button } from "react-bootstrap";
+import { getFees } from "./Services/fee";
 
 const FeeManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [fees, setFees] = useState([
-    {
-      id: "1",
-      studentName: "John Doe",
-      registrationNumber: "12345",
-      feeAmount: "5000",
-      class: "10th",
-      status: "Due",
-    },
-    {
-      id: "2",
-      studentName: "Jane Smith",
-      registrationNumber: "67890",
-      feeAmount: "7500",
-      class: "9th",
-      status: "Due",
-    },
-  ]);
+  const [fees, setFees] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -167,6 +152,23 @@ const FeeManagement = () => {
   const filteredFees = selectedClass
     ? fees.filter((fee) => fee.class === selectedClass)
     : fees;
+
+  useEffect(() => {
+    const fetchFees = async () => {
+      setLoading(true);
+      try {
+        const data = await getFees(); // Fetch the fee data
+        setFees(data);
+      } catch (error) {
+        console.error("Error fetching fee data:", error);
+      } finally {
+        setLoading(false);
+      }
+      if (loading) return <p>Loading...</p>;
+    };
+
+    fetchFees();
+  }, []);
 
   return (
     <div className="container-fluid" style={{ overflowX: "hidden" }}>

@@ -1,29 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Select from "react-select";
 import { FaEdit, FaPlus, FaSearch, FaTrash } from "react-icons/fa";
+import { getEvents } from "./Services/event";
 
 const EventCalendar = () => {
   const [showForm, setShowForm] = useState(false);
-  const [events, setEvents] = useState([
-    {
-      id: "1",
-      title: "School Annual Day",
-      description:
-        "Annual function celebration with various cultural programs.",
-      date: "2023-09-15",
-      location: "School Auditorium",
-    },
-    {
-      id: "2",
-      title: "Parent-Teacher Meeting",
-      description:
-        "Meeting to discuss student progress and academic performance.",
-      date: "2023-09-20",
-      location: "Classrooms",
-    },
-  ]);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -89,6 +74,22 @@ const EventCalendar = () => {
     // Add more options as needed
   ];
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const data = await getEvents(); // Fetch the event data
+        setEvents(data);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   return (
     <div className="container-fluid" style={{ overflowX: "hidden" }}>
       <div className="row">
@@ -96,6 +97,7 @@ const EventCalendar = () => {
           <Sidebar />
         </div>
         <div className="col-md-9" style={{ width: "76%" }}>
+          if (loading) return <p>Loading...</p>;
           <div className="content">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h1 style={{ color: "#000", flex: "1" }}>Event Calendar</h1>

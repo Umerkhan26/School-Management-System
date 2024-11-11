@@ -366,6 +366,7 @@ const Contact = () => {
                   fontWeight: "400",
                   fontSize: "16px",
                   lineHeight: "1.9",
+                  cursor: "pointer",
                   color: "#5c5c77",
                   margin: "0px, 0px, 48px",
                 }}

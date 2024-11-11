@@ -280,7 +280,6 @@ const Home = () => {
             >
               Sign In
             </button>
-            <button className="btn btn-light">Guest Mode</button>
             <button className="btn admin-register-btn ms-2">
               Admin Register
             </button>

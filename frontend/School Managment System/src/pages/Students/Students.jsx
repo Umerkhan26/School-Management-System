@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Select from "react-select";
 import { FaUser, FaUserGraduate, FaSearch } from "react-icons/fa";
+import { getStudents } from "./Services/StudentData";
 
 const StudentsSec = () => {
   const [showForm, setShowForm] = useState(false);
+  const [students, setStudents] = useState([]);
   const [formData, setFormData] = useState({
     studentName: "",
     registrationNumber: "",
@@ -162,24 +164,11 @@ const StudentsSec = () => {
   ];
 
   // Sample data for students
-  const students = [
-    {
-      studentName: "John Doe",
-      registrationNumber: "12345",
-      email: "john@example.com",
-      class: "Class 1",
-      gender: "Male",
-      section: "A",
-    },
-    {
-      studentName: "Jane Smith",
-      registrationNumber: "67890",
-      email: "jane@example.com",
-      class: "Class 2",
-      gender: "Female",
-      section: "B",
-    },
-  ];
+  useEffect(() => {
+    getStudents().then((data) => {
+      setStudents(data);
+    });
+  }, []);
 
   return (
     <div className="container-fluid" style={{ overflowX: "hidden" }}>

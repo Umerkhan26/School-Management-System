@@ -1,20 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Form, Button, Table, Row, Col, Modal } from "react-bootstrap";
 import { IoChevronDown } from "react-icons/io5"; // Importing the chevron down icon
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaSearch } from "react-icons/fa";
+import { getAttendanceData } from "./Services/attendance";
 
 const Attendance = () => {
   const [showAttendance, setShowAttendance] = useState(false);
-  const [attendanceData, setAttendanceData] = useState([
-    { regNo: "001", name: "John Doe", status: "Present" },
-    { regNo: "002", name: "Jane Smith", status: "Absent" },
-    { regNo: "003", name: "Sam Brown", status: "Present" },
-    { regNo: "004", name: "Lucy Black", status: "Absent" },
-    { regNo: "005", name: "Mike Green", status: "Present" },
-    { regNo: "006", name: "Anna White", status: "Absent" },
-  ]);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [loading, setLoading] = useState(false); // To track loading state
+  const [error, setError] = useState(null);
   const [newStudent, setNewStudent] = useState({
     regNo: "",
     name: "",
@@ -66,6 +62,26 @@ const Attendance = () => {
     setShowAddModal(false);
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true when fetching starts
+      setError(null); // Reset any previous errors
+
+      try {
+        // Fetch attendance data from the API or the source
+        const attendance = await getAttendanceData();
+        setAttendanceData(attendance); // Store the fetched data in state
+      } catch (error) {
+        setError("Error fetching attendance data: " + error.message); // Capture error if fetching fails
+      } finally {
+        setLoading(false); // Set loading to false after fetching is complete
+      }
+      if (loading) return <p>Loading...</p>;
+      if (error) return <p>{error}</p>;
+    };
+
+    fetchData(); // Call the function when the component mounts
+  }, []);
   const renderAttendanceRows = () => {
     return attendanceData.map((student, index) => (
       <tr key={index}>
